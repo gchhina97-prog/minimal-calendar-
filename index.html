@@ -6,11 +6,11 @@
   <title>Minimal Digital Calendar</title>
   <style>
     :root {
-      --bg-color: #E8E6E1;
-      --text-main: #1A1A1A;
-      --text-muted: #8C8C8C;
-      --accent-orange: #FF5500;
-      --dot-empty: #C8C6C1;
+      --bg-color: #121212;
+      --text-main: #888888; /* Gray Big Date & Main Text */
+      --text-muted: #666666;
+      --accent-orange: #FF5500; /* Today's Orange Highlight */
+      --dot-empty: #2B2B2B;
     }
 
     * {
@@ -31,25 +31,29 @@
     }
 
     .calendar-card {
-      width: 90vw;
-      max-width: 500px;
-      padding: 24px;
+      width: 95vw;
+      max-width: 680px;
+      padding: 36px;
       display: flex;
       flex-direction: column;
     }
 
+    /* Oversized Gray Main Date Display */
     .date-number {
-      font-size: clamp(8rem, 20vw, 12rem);
-      font-weight: 700;
-      line-height: 0.85;
-      letter-spacing: -4px;
+      font-size: clamp(10rem, 25vw, 16rem);
+      font-weight: 800;
+      line-height: 0.8;
+      letter-spacing: -6px;
+      color: var(--text-main);
     }
 
     .meta-row {
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      margin-top: 24px;
+      margin-top: 32px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #222222;
     }
 
     .month-year {
@@ -57,30 +61,32 @@
     }
 
     .month-name {
-      font-size: 1.5rem;
-      font-weight: 600;
-      letter-spacing: 1px;
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--text-main);
     }
 
     .year-number {
-      font-size: 1.25rem;
+      font-size: 1.6rem;
       color: var(--text-muted);
-      margin-top: 2px;
+      margin-top: 4px;
     }
 
     .day-name {
-      font-size: 1.5rem;
-      font-weight: 500;
+      font-size: 2.2rem;
+      font-weight: 600;
+      color: var(--text-main);
     }
 
     .controls {
       display: flex;
-      gap: 16px;
-      margin: 20px 0 28px 0;
+      gap: 20px;
+      margin: 24px 0 32px 0;
     }
 
     .nav-btn {
-      font-size: 1.25rem;
+      font-size: 1.6rem;
       color: var(--text-main);
       user-select: none;
     }
@@ -89,44 +95,56 @@
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       text-align: center;
-      margin-bottom: 12px;
+      margin-bottom: 18px;
     }
 
     .day-headers span {
-      font-size: 0.9rem;
+      font-size: 1.2rem;
       color: var(--text-muted);
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .dots-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 14px;
+      gap: 16px;
       justify-items: center;
     }
 
+    /* Day Dots with Visible Centered Date Numbers */
     .dot {
-      width: 28px;
-      height: 28px;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
-      background-color: var(--text-main);
-      transition: background-color 0.3s ease;
+      background-color: #FFFFFF;
+      color: #121212; /* Black Date Number Text inside dot */
+      font-size: 1rem;
+      font-weight: 700;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      user-select: none;
+      transition: transform 0.2s ease, background-color 0.3s ease;
     }
 
+    /* Today's Orange Highlight with White Text */
     .dot.today {
-      background-color: var(--accent-orange);
+      background-color: var(--accent-orange) !important;
+      color: #FFFFFF !important;
+      transform: scale(1.18);
+      box-shadow: 0 0 16px rgba(255, 85, 0, 0.7);
     }
 
     .dot.empty {
-      background-color: transparent;
-      border: 2px solid var(--dot-empty);
+      background-color: transparent !important;
+      border: 2px dashed var(--dot-empty);
     }
 
     .footer-quote {
       text-align: center;
-      margin-top: 40px;
-      font-size: 0.8rem;
-      letter-spacing: 3px;
+      margin-top: 48px;
+      font-size: 0.95rem;
+      letter-spacing: 4px;
       text-transform: uppercase;
       color: var(--text-muted);
     }
@@ -160,12 +178,22 @@
   </div>
 
   <script>
+    // Distinct shade colors for each date dot across the month
+    const distinctColors = [
+      "#FFFFFF", "#F2F2F2", "#E6E6E6", "#DADADA", "#CECECE",
+      "#C2C2C2", "#B6B6B6", "#AAAAAA", "#F8F8F8", "#ECECEC",
+      "#E0E0E0", "#D4D4D4", "#C8C8C8", "#BCBCBC", "#B0B0B0",
+      "#F4F4F4", "#E8E8E8", "#DCDCDC", "#D0D0D0", "#C4C4C4",
+      "#B8B8B8", "#ACACAC", "#F0F0F0", "#E4E4E4", "#D8D8D8",
+      "#CCCCCC", "#C0C0C0", "#B4B4B4", "#A8A8A8", "#FAFAFA", "#EEEEEE"
+    ];
+
     function renderCalendar() {
       const today = new Date();
       const year = today.getFullYear();
       const month = today.getMonth();
 
-      // Automatically set current Date, Month, Year, and Day Name
+      // Set main date display values
       document.getElementById('big-date').textContent = today.getDate();
       document.getElementById('month-name').textContent = today.toLocaleString('default', { month: 'long' });
       document.getElementById('year-number').textContent = year;
@@ -174,24 +202,27 @@
       const grid = document.getElementById('dots-grid');
       grid.innerHTML = '';
 
-      // First day of month offset (0 = Monday, 6 = Sunday)
       const firstDay = new Date(year, month, 1).getDay();
       const startOffset = (firstDay === 0 ? 6 : firstDay - 1);
       const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-      // Render offset/empty dots for days before the 1st
+      // Render offset dots before start of month
       for (let i = 0; i < startOffset; i++) {
         const dot = document.createElement('div');
         dot.className = 'dot empty';
         grid.appendChild(dot);
       }
 
-      // Render dots for each day in the month
+      // Render dots with date numbers inside
       for (let day = 1; day <= daysInMonth; day++) {
         const dot = document.createElement('div');
         dot.className = 'dot';
+        dot.textContent = day; // Insert visible date number inside dot
         
-        // Highlight active day in orange
+        // Apply distinct shade color
+        dot.style.backgroundColor = distinctColors[(day - 1) % distinctColors.length];
+
+        // Today is highlighted in Orange
         if (day === today.getDate()) {
           dot.classList.add('today');
         }
@@ -200,11 +231,8 @@
       }
     }
 
-    // Initial render
     renderCalendar();
-
-    // Automatically refresh date every hour to stay updated
-    setInterval(renderCalendar, 3600000);
+    setInterval(renderCalendar, 3600000); // Automatically refresh date every hour
   </script>
 </body>
 </html>
