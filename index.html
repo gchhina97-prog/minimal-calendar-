@@ -1,431 +1,457 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Minimal Digital Calendar</title>
-    <style>
-        /* ── reset & base ── */
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minimal Digital Calendar</title>
+  <style>
+    /* ── reset & base ── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        :root {
-            --bg: #E8E6E1;
-            --text-dark: #444444;
-            --text-muted: #8C8C8C;
-            --accent: #FF5500;
-            --dot-bg: #FFFFFF;
-            --border-light: #C8C6C1;
-            --radius: 50%;
-            --transition: 0.2s ease;
-        }
+    :root {
+      --bg: #E8E6E1;
+      --text-dark: #444444;
+      --text-muted: #8C8C8C;
+      --accent: #FF5500;
+      --dot-bg: #FFFFFF;
+      --border-light: #C8C6C1;
+      --radius: 50%;
+      --transition: 0.2s ease;
+    }
 
-        body {
-            background-color: var(--bg);
-            color: var(--text-dark);
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 16px;
-            margin: 0;
-        }
+    body {
+      background-color: var(--bg);
+      color: var(--text-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px;
+      margin: 0;
+    }
 
-        /* ── card ── */
-        .calendar-card {
-            width: 100%;
-            max-width: 700px;
-            padding: clamp(20px, 5vw, 44px);
-            display: flex;
-            flex-direction: column;
-            background: var(--bg);
-            border-radius: 32px;
-        }
+    .calendar-card {
+      width: 100%;
+      max-width: 700px;
+      padding: clamp(16px, 4vw, 44px);
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      border-radius: 28px;
+      transition: padding 0.2s;
+    }
 
-        /* ── big date ── */
-        .date-number {
-            font-size: clamp(4.8rem, 22vw, 14rem);
-            font-weight: 800;
-            line-height: 0.82;
-            letter-spacing: -4px;
-            color: var(--text-dark);
-            transition: font-size 0.2s;
-        }
+    /* ── big date ── */
+    .date-number {
+      font-size: clamp(4rem, 20vw, 14rem);
+      font-weight: 800;
+      line-height: 0.82;
+      letter-spacing: -4px;
+      color: var(--text-dark);
+      transition: font-size 0.2s, letter-spacing 0.2s;
+    }
 
-        /* ── meta row ── */
-        .meta-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-top: clamp(20px, 4vw, 36px);
-            padding-bottom: 12px;
-            border-bottom: 2px solid var(--border-light);
-            flex-wrap: wrap;
-            gap: 8px 12px;
-        }
+    /* ── meta row ── */
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: clamp(12px, 3vw, 36px);
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border-light);
+      flex-wrap: wrap;
+      gap: 6px 12px;
+    }
 
-        .month-year .month-name {
-            font-size: clamp(1.6rem, 4.5vw, 2.8rem);
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--text-dark);
-            line-height: 1.2;
-        }
-        .month-year .year-number {
-            font-size: clamp(1rem, 2.2vw, 1.6rem);
-            color: var(--text-muted);
-            margin-top: 2px;
-            letter-spacing: 0.5px;
-        }
-        .day-name {
-            font-size: clamp(1.4rem, 3.8vw, 2.4rem);
-            font-weight: 600;
-            color: var(--text-dark);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
+    .month-year .month-name {
+      font-size: clamp(1.4rem, 4vw, 2.8rem);
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-dark);
+      line-height: 1.2;
+    }
+    .month-year .year-number {
+      font-size: clamp(0.9rem, 2vw, 1.6rem);
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .day-name {
+      font-size: clamp(1.2rem, 3.5vw, 2.4rem);
+      font-weight: 600;
+      color: var(--text-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
 
-        /* ── controls ── */
-        .controls {
-            display: flex;
-            gap: clamp(16px, 3vw, 32px);
-            margin: clamp(16px, 2.5vw, 28px) 0 clamp(20px, 3vw, 34px) 0;
-            align-items: center;
-        }
-        .nav-btn {
-            font-size: clamp(1.6rem, 3.2vw, 2.4rem);
-            font-weight: 300;
-            color: var(--text-dark);
-            cursor: pointer;
-            user-select: none;
-            padding: 4px 12px;
-            border-radius: 40px;
-            transition: background var(--transition), transform var(--transition);
-            line-height: 1;
-            background: transparent;
-            border: none;
-            font-family: inherit;
-        }
-        .nav-btn:hover {
-            background: rgba(0, 0, 0, 0.04);
-            transform: scale(1.06);
-        }
-        .nav-btn:active {
-            transform: scale(0.94);
-        }
+    /* ── controls ── */
+    .controls {
+      display: flex;
+      gap: clamp(12px, 2.5vw, 32px);
+      margin: clamp(10px, 2vw, 28px) 0 clamp(14px, 2.5vw, 34px) 0;
+      align-items: center;
+    }
+    .nav-btn {
+      font-size: clamp(1.4rem, 3vw, 2.4rem);
+      font-weight: 300;
+      color: var(--text-dark);
+      cursor: pointer;
+      user-select: none;
+      padding: 4px 12px;
+      border-radius: 40px;
+      transition: background var(--transition), transform var(--transition);
+      line-height: 1;
+      background: transparent;
+      border: none;
+      font-family: inherit;
+    }
+    .nav-btn:hover {
+      background: rgba(0, 0, 0, 0.04);
+      transform: scale(1.06);
+    }
+    .nav-btn:active {
+      transform: scale(0.94);
+    }
 
-        .month-label {
-            font-size: clamp(1.1rem, 2.2vw, 1.6rem);
-            font-weight: 600;
-            color: var(--text-dark);
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            flex: 1;
-            min-width: 80px;
-        }
+    .month-label {
+      font-size: clamp(1rem, 2vw, 1.6rem);
+      font-weight: 600;
+      color: var(--text-dark);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      flex: 1;
+      min-width: 60px;
+    }
 
-        /* ── day headers ── */
-        .day-headers {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            text-align: center;
-            margin-bottom: clamp(10px, 1.8vw, 20px);
-            gap: clamp(4px, 1vw, 14px);
-        }
-        .day-headers span {
-            font-size: clamp(0.75rem, 1.6vw, 1.2rem);
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
+    /* ── day headers ── */
+    .day-headers {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      margin-bottom: clamp(6px, 1.5vw, 20px);
+      gap: clamp(3px, 0.8vw, 14px);
+    }
+    .day-headers span {
+      font-size: clamp(0.65rem, 1.4vw, 1.2rem);
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
 
-        /* ── dots grid ── */
-        .dots-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: clamp(4px, 1.2vw, 16px);
-        }
+    /* ── dots grid ── */
+    .dots-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: clamp(3px, 1vw, 16px);
+    }
 
-        /* ── dot ── */
-        .dot {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            border-radius: var(--radius);
-            background-color: var(--dot-bg);
-            color: #1A1A1A;
-            font-size: clamp(0.7rem, 1.6vw, 1.2rem);
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            user-select: none;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-            transition: transform var(--transition), background-color var(--transition), box-shadow var(--transition);
-            will-change: transform;
-            /* ensure text fits */
-            line-height: 1;
-            text-align: center;
-        }
+    .dot {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius);
+      background-color: var(--dot-bg);
+      color: #1A1A1A;
+      font-size: clamp(0.6rem, 1.5vw, 1.2rem);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      transition: transform var(--transition), background-color var(--transition), box-shadow var(--transition);
+      line-height: 1;
+      text-align: center;
+    }
 
-        /* empty dot – completely invisible, keeps grid alignment */
-        .dot.empty {
-            background-color: transparent !important;
-            box-shadow: none !important;
-            transform: none !important;
-            pointer-events: none;
-        }
+    .dot.empty {
+      background-color: transparent !important;
+      box-shadow: none !important;
+      transform: none !important;
+      pointer-events: none;
+    }
 
-        /* today's dot – orange highlight */
-        .dot.today {
-            background-color: var(--accent) !important;
-            color: #FFFFFF !important;
-            transform: scale(1.12);
-            box-shadow: 0 4px 16px rgba(255, 85, 0, 0.35);
-            font-weight: 800;
-        }
+    .dot.today {
+      background-color: var(--accent) !important;
+      color: #FFFFFF !important;
+      transform: scale(1.12);
+      box-shadow: 0 4px 16px rgba(255, 85, 0, 0.35);
+      font-weight: 800;
+    }
 
-        /* ── footer ── */
-        .footer-quote {
-            text-align: center;
-            margin-top: clamp(28px, 5vw, 52px);
-            font-size: clamp(0.7rem, 1.4vw, 0.95rem);
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            opacity: 0.7;
-        }
+    /* ── footer ── */
+    .footer-quote {
+      text-align: center;
+      margin-top: clamp(18px, 4vw, 52px);
+      font-size: clamp(0.6rem, 1.2vw, 0.95rem);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      opacity: 0.7;
+    }
 
-        /* ── small-screen adjustments ── */
-        @media (max-width: 420px) {
-            .calendar-card {
-                padding: 16px 12px;
-            }
-            .meta-row {
-                padding-bottom: 8px;
-            }
-            .controls {
-                gap: 10px;
-                margin: 12px 0 16px 0;
-            }
-            .day-headers {
-                gap: 3px;
-                margin-bottom: 8px;
-            }
-            .dots-grid {
-                gap: 4px;
-            }
-            .dot {
-                font-size: clamp(0.6rem, 3.2vw, 0.85rem);
-            }
-            .date-number {
-                letter-spacing: -2px;
-            }
-        }
+    /* ── LANDSCAPE & SHORT SCREENS ── */
+    @media (orientation: landscape) and (max-height: 700px),
+           (max-height: 500px) {
+      .calendar-card {
+        padding: 10px 16px;
+        border-radius: 16px;
+      }
 
-        /* touch-friendly tap target */
-        @media (hover: none) {
-            .nav-btn:hover {
-                background: transparent;
-                transform: none;
-            }
-            .nav-btn:active {
-                transform: scale(0.92);
-                background: rgba(0, 0, 0, 0.04);
-            }
-        }
-    </style>
+      .date-number {
+        font-size: clamp(2.4rem, 10vw, 5rem);
+        letter-spacing: -2px;
+        line-height: 0.9;
+      }
+
+      .meta-row {
+        margin-top: 6px;
+        padding-bottom: 5px;
+        border-bottom-width: 1.5px;
+        gap: 4px 8px;
+      }
+      .month-year .month-name {
+        font-size: clamp(1rem, 2.5vw, 1.4rem);
+      }
+      .month-year .year-number {
+        font-size: clamp(0.75rem, 1.2vw, 1rem);
+      }
+      .day-name {
+        font-size: clamp(1rem, 2.2vw, 1.4rem);
+      }
+
+      .controls {
+        margin: 6px 0 10px 0;
+        gap: 8px;
+      }
+      .nav-btn {
+        font-size: 1.2rem;
+        padding: 2px 10px;
+      }
+      .month-label {
+        font-size: clamp(0.8rem, 1.5vw, 1.1rem);
+        min-width: 40px;
+      }
+
+      .day-headers {
+        margin-bottom: 4px;
+        gap: 2px;
+      }
+      .day-headers span {
+        font-size: clamp(0.5rem, 1vw, 0.75rem);
+      }
+
+      .dots-grid {
+        gap: clamp(2px, 0.6vw, 6px);
+      }
+
+      .dot {
+        font-size: clamp(0.5rem, 1.2vw, 0.8rem);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      }
+
+      .footer-quote {
+        margin-top: 8px;
+        font-size: clamp(0.45rem, 0.8vw, 0.65rem);
+        letter-spacing: 2px;
+      }
+    }
+
+    /* extra‑small phones in landscape */
+    @media (orientation: landscape) and (max-height: 450px) {
+      .calendar-card {
+        padding: 6px 12px;
+      }
+      .date-number {
+        font-size: clamp(1.8rem, 8vw, 3.6rem);
+      }
+      .meta-row .month-name {
+        font-size: 0.9rem;
+      }
+      .day-name {
+        font-size: 0.9rem;
+      }
+      .controls {
+        margin: 4px 0 6px 0;
+        gap: 4px;
+      }
+      .nav-btn {
+        font-size: 1rem;
+        padding: 0 8px;
+      }
+      .month-label {
+        font-size: 0.7rem;
+      }
+      .day-headers span {
+        font-size: 0.45rem;
+      }
+      .dot {
+        font-size: 0.4rem;
+      }
+      .footer-quote {
+        margin-top: 4px;
+        font-size: 0.4rem;
+        letter-spacing: 1px;
+      }
+    }
+
+    /* small touch targets */
+    @media (hover: none) {
+      .nav-btn:hover {
+        background: transparent;
+        transform: none;
+      }
+      .nav-btn:active {
+        transform: scale(0.92);
+        background: rgba(0, 0, 0, 0.04);
+      }
+    }
+  </style>
 </head>
 <body>
 
-    <div class="calendar-card" role="application" aria-label="Calendar">
+  <div class="calendar-card" role="application" aria-label="Calendar">
+    <div class="date-number" id="big-date">--</div>
 
-        <!-- Big Date -->
-        <div class="date-number" id="big-date">--</div>
-
-        <!-- Meta Row -->
-        <div class="meta-row">
-            <div class="month-year">
-                <div class="month-name" id="month-name">MONTH</div>
-                <div class="year-number" id="year-number">202X</div>
-            </div>
-            <div class="day-name" id="day-name">---</div>
-        </div>
-
-        <!-- Controls -->
-        <div class="controls">
-            <button class="nav-btn" id="prev-btn" aria-label="Previous month">‹</button>
-            <span class="month-label" id="month-label">January 2025</span>
-            <button class="nav-btn" id="next-btn" aria-label="Next month">›</button>
-        </div>
-
-        <!-- Day Headers (Mon–Sun) -->
-        <div class="day-headers" aria-hidden="true">
-            <span>M</span><span>T</span><span>W</span><span>T</span>
-            <span>F</span><span>S</span><span>S</span>
-        </div>
-
-        <!-- Dots Grid -->
-        <div class="dots-grid" id="dots-grid"></div>
-
-        <!-- Footer -->
-        <div class="footer-quote">Less but better</div>
+    <div class="meta-row">
+      <div class="month-year">
+        <div class="month-name" id="month-name">MONTH</div>
+        <div class="year-number" id="year-number">202X</div>
+      </div>
+      <div class="day-name" id="day-name">---</div>
     </div>
 
-    <script>
-        (function() {
-            'use strict';
+    <div class="controls">
+      <button class="nav-btn" id="prev-btn" aria-label="Previous month">‹</button>
+      <span class="month-label" id="month-label">January 2025</span>
+      <button class="nav-btn" id="next-btn" aria-label="Next month">›</button>
+    </div>
 
-            // ─── state ──────────────────────────────────────────────
-            let viewYear = new Date().getFullYear();
-            let viewMonth = new Date().getMonth(); // 0-based
+    <div class="day-headers" aria-hidden="true">
+      <span>M</span><span>T</span><span>W</span><span>T</span>
+      <span>F</span><span>S</span><span>S</span>
+    </div>
 
-            // ─── DOM refs ──────────────────────────────────────────
-            const bigDateEl = document.getElementById('big-date');
-            const monthNameEl = document.getElementById('month-name');
-            const yearNumberEl = document.getElementById('year-number');
-            const dayNameEl = document.getElementById('day-name');
-            const monthLabelEl = document.getElementById('month-label');
-            const dotsGrid = document.getElementById('dots-grid');
-            const prevBtn = document.getElementById('prev-btn');
-            const nextBtn = document.getElementById('next-btn');
+    <div class="dots-grid" id="dots-grid"></div>
 
-            // ─── helpers ───────────────────────────────────────────
-            function getToday() {
-                const d = new Date();
-                return { year: d.getFullYear(), month: d.getMonth(), date: d.getDate() };
-            }
+    <div class="footer-quote">Less but better</div>
+  </div>
 
-            function daysInMonth(year, month) {
-                return new Date(year, month + 1, 0).getDate();
-            }
+  <script>
+    (function() {
+      'use strict';
 
-            function firstDayOffset(year, month) {
-                // getDay(): 0=Sun → we want Mon=0 … Sun=6
-                const d = new Date(year, month, 1).getDay();
-                return d === 0 ? 6 : d - 1;
-            }
+      let viewYear = new Date().getFullYear();
+      let viewMonth = new Date().getMonth();
 
-            function formatMonth(year, month) {
-                const d = new Date(year, month, 1);
-                return d.toLocaleString('default', { month: 'long' }) + ' ' + year;
-            }
+      const bigDateEl = document.getElementById('big-date');
+      const monthNameEl = document.getElementById('month-name');
+      const yearNumberEl = document.getElementById('year-number');
+      const dayNameEl = document.getElementById('day-name');
+      const monthLabelEl = document.getElementById('month-label');
+      const dotsGrid = document.getElementById('dots-grid');
+      const prevBtn = document.getElementById('prev-btn');
+      const nextBtn = document.getElementById('next-btn');
 
-            // ─── render ────────────────────────────────────────────
-            function renderCalendar(year, month) {
-                const today = getToday();
-                const isCurrentMonth = (year === today.year && month === today.month);
-                const todayDate = today.date;
+      function getToday() {
+        const d = new Date();
+        return { year: d.getFullYear(), month: d.getMonth(), date: d.getDate() };
+      }
 
-                // Big date
-                const currentDate = new Date(year, month, 1);
-                // show today's date if we're viewing current month, else show 1st
-                let displayDate;
-                if (isCurrentMonth) {
-                    displayDate = todayDate;
-                } else {
-                    // show the last day of the viewed month, or 1st? let's show 1st
-                    displayDate = 1;
-                }
-                bigDateEl.textContent = displayDate;
+      function daysInMonth(year, month) {
+        return new Date(year, month + 1, 0).getDate();
+      }
 
-                // Month name & year
-                const monthName = currentDate.toLocaleString('default', { month: 'long' });
-                monthNameEl.textContent = monthName;
-                yearNumberEl.textContent = year;
+      function firstDayOffset(year, month) {
+        const d = new Date(year, month, 1).getDay();
+        return d === 0 ? 6 : d - 1;
+      }
 
-                // Day name (for the displayed date)
-                const dayName = new Date(year, month, displayDate)
-                    .toLocaleString('default', { weekday: 'short' });
-                dayNameEl.textContent = dayName;
+      function formatMonth(year, month) {
+        const d = new Date(year, month, 1);
+        return d.toLocaleString('default', { month: 'long' }) + ' ' + year;
+      }
 
-                // Label for controls
-                monthLabelEl.textContent = formatMonth(year, month);
+      function renderCalendar(year, month) {
+        const today = getToday();
+        const isCurrentMonth = (year === today.year && month === today.month);
+        const todayDate = today.date;
 
-                // ── build dots grid ──
-                dotsGrid.innerHTML = '';
+        let displayDate = isCurrentMonth ? todayDate : 1;
+        bigDateEl.textContent = displayDate;
 
-                const offset = firstDayOffset(year, month);
-                const totalDays = daysInMonth(year, month);
+        const currentDate = new Date(year, month, 1);
+        monthNameEl.textContent = currentDate.toLocaleString('default', { month: 'long' });
+        yearNumberEl.textContent = year;
 
-                // empty slots before 1st
-                for (let i = 0; i < offset; i++) {
-                    const empty = document.createElement('div');
-                    empty.className = 'dot empty';
-                    empty.setAttribute('aria-hidden', 'true');
-                    dotsGrid.appendChild(empty);
-                }
+        const dayName = new Date(year, month, displayDate)
+          .toLocaleString('default', { weekday: 'short' });
+        dayNameEl.textContent = dayName;
 
-                // day dots
-                for (let day = 1; day <= totalDays; day++) {
-                    const dot = document.createElement('div');
-                    dot.className = 'dot';
-                    dot.textContent = day;
+        monthLabelEl.textContent = formatMonth(year, month);
 
-                    // highlight today
-                    if (isCurrentMonth && day === todayDate) {
-                        dot.classList.add('today');
-                    }
+        dotsGrid.innerHTML = '';
+        const offset = firstDayOffset(year, month);
+        const totalDays = daysInMonth(year, month);
 
-                    dotsGrid.appendChild(dot);
-                }
-            }
+        for (let i = 0; i < offset; i++) {
+          const empty = document.createElement('div');
+          empty.className = 'dot empty';
+          empty.setAttribute('aria-hidden', 'true');
+          dotsGrid.appendChild(empty);
+        }
 
-            // ─── navigation ────────────────────────────────────────
-            function goToMonth(year, month) {
-                // clamp month
-                if (month < 0) { month = 11;
-                    year -= 1; }
-                if (month > 11) { month = 0;
-                    year += 1; }
-                viewYear = year;
-                viewMonth = month;
-                renderCalendar(viewYear, viewMonth);
-            }
+        for (let day = 1; day <= totalDays; day++) {
+          const dot = document.createElement('div');
+          dot.className = 'dot';
+          dot.textContent = day;
+          if (isCurrentMonth && day === todayDate) {
+            dot.classList.add('today');
+          }
+          dotsGrid.appendChild(dot);
+        }
+      }
 
-            function prevMonth() { goToMonth(viewYear, viewMonth - 1); }
+      function goToMonth(year, month) {
+        if (month < 0) { month = 11; year -= 1; }
+        if (month > 11) { month = 0; year += 1; }
+        viewYear = year;
+        viewMonth = month;
+        renderCalendar(viewYear, viewMonth);
+      }
 
-            function nextMonth() { goToMonth(viewYear, viewMonth + 1); }
+      function prevMonth() { goToMonth(viewYear, viewMonth - 1); }
+      function nextMonth() { goToMonth(viewYear, viewMonth + 1); }
 
-            // ─── init ──────────────────────────────────────────────
-            function init() {
-                const d = new Date();
-                viewYear = d.getFullYear();
-                viewMonth = d.getMonth();
-                renderCalendar(viewYear, viewMonth);
-            }
+      function init() {
+        const d = new Date();
+        viewYear = d.getFullYear();
+        viewMonth = d.getMonth();
+        renderCalendar(viewYear, viewMonth);
+      }
 
-            // ─── events ────────────────────────────────────────────
-            prevBtn.addEventListener('click', prevMonth);
-            nextBtn.addEventListener('click', nextMonth);
+      prevBtn.addEventListener('click', prevMonth);
+      nextBtn.addEventListener('click', nextMonth);
 
-            // keyboard support
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'ArrowLeft') { e.preventDefault();
-                    prevMonth(); }
-                if (e.key === 'ArrowRight') { e.preventDefault();
-                    nextMonth(); }
-            });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') { e.preventDefault(); prevMonth(); }
+        if (e.key === 'ArrowRight') { e.preventDefault(); nextMonth(); }
+      });
 
-            // refresh every hour (keeps today highlighted)
-            setInterval(() => {
-                // re-render current view – but if view is current month, today highlight updates
-                renderCalendar(viewYear, viewMonth);
-            }, 3600000);
+      setInterval(() => {
+        renderCalendar(viewYear, viewMonth);
+      }, 3600000);
 
-            // ─── go ────────────────────────────────────────────────
-            init();
-
-        })();
-    </script>
+      init();
+    })();
+  </script>
 
 </body>
 </html>
