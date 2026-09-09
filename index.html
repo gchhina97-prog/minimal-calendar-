@@ -3,26 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Minimal Week Calendar</title>
+  <title>Calendar · Light/Dark · Resizable</title>
   <style>
-    /* ── reset & base ── */
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    /* ── CSS variables (theme & sizing) ── */
     :root {
       --bg: #E8E6E1;
-      --text-dark: #2C2C2C;
+      --surface: #E8E6E1;
+      --text-dark: #444444;
       --text-muted: #8C8C8C;
       --accent: #FF5500;
       --dot-bg: #FFFFFF;
-      --border-light: #D0CEC9;
-      --radius: 50%;
-      --transition: 0.2s ease;
+      --border-light: #C8C6C1;
+      --shadow: rgba(0,0,0,0.05);
+      --card-radius: 28px;
+      --font-scale: 1;
+    }
+
+    /* Dark theme */
+    [data-theme="dark"] {
+      --bg: #1E1E1E;
+      --surface: #2A2A2A;
+      --text-dark: #E8E6E1;
+      --text-muted: #A0A0A0;
+      --dot-bg: #3A3A3A;
+      --border-light: #4A4A4A;
+      --shadow: rgba(0,0,0,0.3);
+      --card-radius: 28px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
@@ -37,467 +49,495 @@
       align-items: center;
       margin: 0;
       padding: 0;
+      transition: background 0.3s, color 0.3s;
     }
 
     .calendar-card {
-      display: flex;
-      flex-direction: column;
+      display: grid;
       width: 100%;
       height: 100dvh;
       max-height: 100dvh;
-      padding: clamp(10px, 2.5vh, 28px);
-      background: var(--bg);
+      padding: clamp(8px, 1.8vh, 28px);
+      background: var(--surface);
+      border-radius: 0;
       box-sizing: border-box;
       overflow: hidden;
-      justify-content: space-between;
+      transition: background 0.3s;
     }
 
-    /* ── top bar ── */
-    .top-bar {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding-bottom: clamp(4px, 0.8vh, 12px);
-      border-bottom: 1px solid var(--border-light);
-      flex-shrink: 0;
-    }
-    .view-toggle {
-      display: flex;
-      gap: clamp(12px, 2vw, 28px);
-      font-size: clamp(0.9rem, 2.5vh, 1.6rem);
-      font-weight: 600;
-      color: var(--text-muted);
-      letter-spacing: 0.5px;
-    }
-    .view-toggle .active {
-      color: var(--text-dark);
-      position: relative;
-    }
-    .view-toggle .active::after {
-      content: '';
-      position: absolute;
-      bottom: -4px;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: var(--accent);
+    /* ── Grid rows: balanced for all orientations ── */
+    .calendar-card {
+      grid-template-rows:
+        minmax(0, 1.4fr)   /* big date */
+        minmax(0, 0.9fr)   /* meta row */
+        minmax(0, 0.8fr)   /* controls (month nav + size/theme) */
+        minmax(0, 0.5fr)   /* day headers */
+        3.8fr              /* dots grid — most space */
+        minmax(0, 0.5fr);  /* footer */
+      gap: clamp(2px, 0.6vh, 10px);
     }
 
     /* ── big date ── */
-    .big-date {
-      display: flex;
-      align-items: baseline;
-      gap: clamp(6px, 1vw, 16px);
-      flex-shrink: 0;
-      padding: clamp(4px, 1vh, 12px) 0;
-    }
-    .big-date .month {
-      font-size: clamp(1.8rem, 5vh, 3.6rem);
-      font-weight: 700;
-      color: var(--text-dark);
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-    .big-date .day {
-      font-size: clamp(2.8rem, 8vh, 5.2rem);
+    .date-number {
+      font-size: calc(clamp(2.6rem, 11vh, 5.2rem) * var(--font-scale));
       font-weight: 800;
+      line-height: 0.9;
+      letter-spacing: -2px;
       color: var(--text-dark);
-      line-height: 1;
+      align-self: end;
+      transition: font-size 0.2s;
     }
 
-    /* ── week navigation ── */
-    .week-nav {
+    /* ── meta row ── */
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding-bottom: clamp(2px, 0.4vh, 8px);
+      border-bottom: 2px solid var(--border-light);
+    }
+    .month-year .month-name {
+      font-size: clamp(1rem, 3.5vh, 2.2rem);
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-dark);
+      line-height: 1.2;
+    }
+    .month-year .year-number {
+      font-size: clamp(0.7rem, 2vh, 1.2rem);
+      color: var(--text-muted);
+    }
+    .day-name {
+      font-size: clamp(0.9rem, 3vh, 1.8rem);
+      font-weight: 600;
+      color: var(--text-dark);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* ── controls (nav + settings) ── */
+    .controls {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-shrink: 0;
-      padding: clamp(2px, 0.5vh, 8px) 0;
     }
-    .week-nav .nav-btn {
-      font-size: clamp(1.6rem, 4vh, 2.6rem);
+    .nav-group {
+      display: flex;
+      align-items: center;
+      gap: clamp(4px, 1vw, 16px);
+    }
+    .nav-btn {
+      font-size: clamp(1.6rem, 4vh, 2.4rem);
       font-weight: 300;
       color: var(--text-dark);
       background: none;
       border: none;
-      padding: 0 clamp(12px, 2vw, 24px);
       cursor: pointer;
+      padding: 0 clamp(6px, 1vw, 16px);
       line-height: 1;
-      transition: transform var(--transition);
       border-radius: 40px;
+      transition: background var(--transition), transform var(--transition);
     }
-    .week-nav .nav-btn:hover {
-      transform: scale(1.1);
+    .nav-btn:hover {
+      background: rgba(0,0,0,0.04);
+      transform: scale(1.06);
     }
-    .week-nav .nav-btn:active {
-      transform: scale(0.9);
+    .nav-btn:active {
+      transform: scale(0.94);
     }
-    .week-label {
-      font-size: clamp(0.9rem, 2.2vh, 1.4rem);
+    .month-label {
+      font-size: clamp(0.8rem, 2.5vh, 1.4rem);
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-dark);
+      letter-spacing: 1.5px;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    /* settings group */
+    .settings-group {
+      display: flex;
+      align-items: center;
+      gap: clamp(4px, 0.8vw, 12px);
+    }
+    .settings-group button {
+      background: none;
+      border: none;
+      font-size: clamp(1.2rem, 3vh, 1.8rem);
+      cursor: pointer;
+      color: var(--text-dark);
+      padding: 4px 6px;
+      border-radius: 30px;
+      transition: background 0.2s;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .settings-group button:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .size-control {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: clamp(0.8rem, 2vh, 1.2rem);
+    }
+    .size-control button {
+      font-size: clamp(1rem, 2.5vh, 1.6rem);
+      padding: 0 8px;
+      font-weight: 600;
+    }
+    .size-control .size-value {
+      min-width: 24px;
+      text-align: center;
       font-weight: 600;
       color: var(--text-muted);
-      letter-spacing: 1px;
     }
 
-    /* ── week grid ── */
-    .week-grid {
+    /* ── day headers ── */
+    .day-headers {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: clamp(4px, 0.8vh, 12px);
-      flex: 1 1 auto;
-      min-height: 0;
-      padding: clamp(4px, 0.6vh, 10px) 0;
-      align-content: center;
-    }
-
-    .day-header {
       text-align: center;
-      font-size: clamp(0.6rem, 1.6vh, 1rem);
+    }
+    .day-headers span {
+      font-size: clamp(0.5rem, 1.8vh, 1rem);
       font-weight: 700;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding-bottom: clamp(2px, 0.4vh, 6px);
     }
 
-    .day-cell {
+    /* ── dots grid ── */
+    .dots-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: clamp(3px, 0.8vh, 10px);
+      align-content: start;
+      overflow: hidden;
+    }
+
+    .dot {
       aspect-ratio: 1 / 1;
       width: 100%;
-      border-radius: var(--radius);
+      border-radius: 50%;
       background-color: var(--dot-bg);
-      color: #1A1A1A;
-      font-size: clamp(0.9rem, 2.6vh, 1.6rem);
+      color: var(--text-dark);
+      font-size: calc(clamp(0.65rem, 2.2vh, 1.4rem) * var(--font-scale));
       font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-      transition: transform var(--transition), background-color var(--transition), box-shadow var(--transition);
       user-select: none;
+      box-shadow: 0 2px 6px var(--shadow);
+      transition: transform 0.2s, background-color 0.3s, box-shadow 0.2s;
     }
-    .day-cell.today {
+
+    .dot.empty {
+      background-color: transparent !important;
+      box-shadow: none !important;
+      transform: none !important;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .dot.today {
       background-color: var(--accent) !important;
       color: #FFFFFF !important;
-      transform: scale(1.08);
+      transform: scale(1.1);
       box-shadow: 0 4px 16px rgba(255, 85, 0, 0.35);
       font-weight: 800;
     }
-    .day-cell.other-month {
+
+    /* ── footer ── */
+    .footer-quote {
+      text-align: center;
+      font-size: clamp(0.4rem, 1.4vh, 0.8rem);
+      letter-spacing: 3px;
+      text-transform: uppercase;
       color: var(--text-muted);
-      background-color: #F0EEE9;
+      opacity: 0.7;
+      align-self: center;
     }
 
-    /* ── actions ── */
-    .actions {
-      display: flex;
-      justify-content: space-between;
-      gap: clamp(10px, 2vw, 24px);
-      flex-shrink: 0;
-      padding-top: clamp(6px, 1.2vh, 16px);
-      border-top: 1px solid var(--border-light);
-      margin-top: auto;
+    /* ── landscape override ── */
+    @media (orientation: landscape) {
+      .calendar-card {
+        padding: clamp(4px, 1vh, 12px);
+        gap: clamp(2px, 0.5vh, 6px);
+        grid-template-rows:
+          minmax(0, 1fr)
+          minmax(0, 0.8fr)
+          minmax(0, 0.7fr)
+          minmax(0, 0.5fr)
+          3.8fr
+          minmax(0, 0.4fr);
+      }
+      .date-number {
+        font-size: calc(clamp(1.6rem, 7vh, 3.2rem) * var(--font-scale));
+        letter-spacing: -1px;
+        align-self: center;
+        margin-bottom: 0;
+      }
+      .month-year .month-name {
+        font-size: clamp(0.8rem, 2.5vh, 1.4rem);
+      }
+      .month-year .year-number {
+        font-size: clamp(0.5rem, 1.4vh, 0.9rem);
+      }
+      .day-name {
+        font-size: clamp(0.7rem, 2.2vh, 1.2rem);
+      }
+      .controls {
+        gap: 2px;
+      }
+      .nav-btn {
+        font-size: clamp(1rem, 3vh, 1.8rem);
+        padding: 0 clamp(4px, 0.8vw, 12px);
+      }
+      .month-label {
+        font-size: clamp(0.6rem, 1.8vh, 1rem);
+        min-width: 60px;
+      }
+      .day-headers span {
+        font-size: clamp(0.4rem, 1.2vh, 0.7rem);
+      }
+      .dots-grid {
+        gap: clamp(2px, 0.6vh, 8px);
+      }
+      .dot {
+        font-size: calc(clamp(0.5rem, 1.8vh, 1rem) * var(--font-scale));
+        box-shadow: 0 1px 4px var(--shadow);
+      }
+      .footer-quote {
+        font-size: clamp(0.3rem, 1vh, 0.6rem);
+        letter-spacing: 2px;
+      }
+      .settings-group button {
+        font-size: clamp(0.8rem, 2vh, 1.2rem);
+      }
+      .size-control button {
+        font-size: clamp(0.7rem, 1.8vh, 1rem);
+      }
     }
-    .actions button {
-      flex: 1;
-      padding: clamp(6px, 1.2vh, 14px) clamp(8px, 1.5vw, 20px);
-      border: none;
-      border-radius: 40px;
-      font-size: clamp(0.7rem, 1.8vh, 1.1rem);
-      font-weight: 600;
-      cursor: pointer;
-      transition: background var(--transition), transform var(--transition);
-      letter-spacing: 0.3px;
-    }
-    .actions .add-reminder {
-      background: #FFFFFF;
-      color: var(--text-dark);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-    }
-    .actions .add-reminder:hover {
-      background: #F5F3EF;
-    }
-    .actions .new-event {
-      background: var(--accent);
-      color: #FFFFFF;
-      box-shadow: 0 2px 8px rgba(255, 85, 0, 0.3);
-    }
-    .actions .new-event:hover {
-      background: #E64A00;
-    }
-    .actions button:active {
-      transform: scale(0.96);
+
+    /* extra‑small landscape */
+    @media (orientation: landscape) and (max-height: 450px) {
+      .calendar-card {
+        padding: 2px 8px;
+        gap: 1px;
+      }
+      .date-number {
+        font-size: calc(clamp(1.2rem, 5vh, 2rem) * var(--font-scale));
+      }
+      .dot {
+        font-size: calc(clamp(0.4rem, 1.4vh, 0.7rem) * var(--font-scale));
+      }
+      .month-year .month-name { font-size: clamp(0.6rem, 1.8vh, 0.9rem); }
+      .day-name { font-size: clamp(0.5rem, 1.6vh, 0.8rem); }
+      .nav-btn { font-size: clamp(0.8rem, 2vh, 1.2rem); }
+      .month-label { font-size: clamp(0.4rem, 1.2vh, 0.7rem); min-width: 40px; }
+      .day-headers span { font-size: clamp(0.3rem, 0.9vh, 0.5rem); }
+      .dots-grid { gap: 2px; }
+      .footer-quote { font-size: clamp(0.25rem, 0.8vh, 0.4rem); }
     }
 
     /* ── touch tweaks ── */
     @media (hover: none) {
-      .nav-btn:hover,
-      .actions button:hover {
-        transform: none;
-      }
-      .nav-btn:active {
-        transform: scale(0.9);
-      }
-      .actions button:active {
-        transform: scale(0.96);
-      }
-    }
-
-    /* ════════════════════════════════════════════════════
-       LANDSCAPE – fine‑tuned for 16:9 (Mi Max 2)
-       ════════════════════════════════════════════════════ */
-    @media (orientation: landscape) {
-      .calendar-card {
-        padding: clamp(4px, 1vh, 12px);
-        gap: 0;
-      }
-      .big-date .month {
-        font-size: clamp(1.2rem, 2.8vh, 1.8rem);
-      }
-      .big-date .day {
-        font-size: clamp(1.8rem, 4.5vh, 2.8rem);
-      }
-      .week-grid {
-        gap: clamp(2px, 0.5vh, 6px);
-      }
-      .day-header {
-        font-size: clamp(0.4rem, 1.2vh, 0.7rem);
-        padding-bottom: clamp(1px, 0.2vh, 4px);
-      }
-      .day-cell {
-        font-size: clamp(0.6rem, 1.8vh, 1rem);
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-      }
-      .week-label {
-        font-size: clamp(0.6rem, 1.6vh, 1rem);
-      }
-      .week-nav .nav-btn {
-        font-size: clamp(1rem, 2.5vh, 1.6rem);
-      }
-      .actions button {
-        font-size: clamp(0.5rem, 1.4vh, 0.85rem);
-        padding: clamp(4px, 0.8vh, 10px) clamp(6px, 1vw, 14px);
-      }
-      .top-bar .view-toggle {
-        font-size: clamp(0.6rem, 1.6vh, 1rem);
-        gap: clamp(6px, 1vw, 16px);
-      }
-      .actions {
-        padding-top: clamp(4px, 0.6vh, 10px);
-      }
-    }
-
-    /* extreme small landscape (height < 450px) */
-    @media (orientation: landscape) and (max-height: 450px) {
-      .calendar-card {
-        padding: 2px 8px;
-      }
-      .big-date .month {
-        font-size: 0.9rem;
-      }
-      .big-date .day {
-        font-size: 1.4rem;
-      }
-      .day-cell {
-        font-size: 0.5rem;
-      }
-      .day-header {
-        font-size: 0.35rem;
-      }
-      .week-label {
-        font-size: 0.5rem;
-      }
-      .week-nav .nav-btn {
-        font-size: 0.8rem;
-      }
-      .actions button {
-        font-size: 0.4rem;
-        padding: 2px 6px;
-      }
-      .top-bar .view-toggle {
-        font-size: 0.5rem;
-      }
+      .nav-btn:hover { background: transparent; transform: none; }
+      .nav-btn:active { transform: scale(0.92); background: rgba(0,0,0,0.04); }
+      .settings-group button:hover { background: transparent; }
     }
   </style>
 </head>
 <body>
 
-  <div class="calendar-card" role="application" aria-label="Week Calendar">
+  <div class="calendar-card" id="app">
 
-    <!-- Top Bar -->
-    <div class="top-bar">
-      <div class="view-toggle">
-        <span class="active">Weekly</span>
-        <span>Monthly</span>
+    <!-- Big Date -->
+    <div class="date-number" id="big-date">--</div>
+
+    <!-- Meta Row -->
+    <div class="meta-row">
+      <div class="month-year">
+        <div class="month-name" id="month-name">MONTH</div>
+        <div class="year-number" id="year-number">202X</div>
+      </div>
+      <div class="day-name" id="day-name">---</div>
+    </div>
+
+    <!-- Controls: nav + settings -->
+    <div class="controls">
+      <div class="nav-group">
+        <button class="nav-btn" id="prev-month">‹</button>
+        <span class="month-label" id="month-label">January 2025</span>
+        <button class="nav-btn" id="next-month">›</button>
+      </div>
+      <div class="settings-group">
+        <!-- Dark/Light toggle -->
+        <button id="theme-toggle" aria-label="Toggle theme">🌓</button>
+        <!-- Font size controls -->
+        <div class="size-control">
+          <button id="size-down">A−</button>
+          <span class="size-value" id="size-value">1.0</span>
+          <button id="size-up">A+</button>
+        </div>
       </div>
     </div>
 
-    <!-- Big Date -->
-    <div class="big-date">
-      <span class="month" id="month-label">April</span>
-      <span class="day" id="day-label">21</span>
+    <!-- Day Headers -->
+    <div class="day-headers">
+      <span>M</span><span>T</span><span>W</span><span>T</span>
+      <span>F</span><span>S</span><span>S</span>
     </div>
 
-    <!-- Week Navigation -->
-    <div class="week-nav">
-      <button class="nav-btn" id="prev-week">‹</button>
-      <span class="week-label" id="week-label">Week 17</span>
-      <button class="nav-btn" id="next-week">›</button>
-    </div>
+    <!-- Dots Grid -->
+    <div class="dots-grid" id="dots-grid"></div>
 
-    <!-- Week Grid (7 columns) -->
-    <div class="week-grid" id="week-grid">
-      <!-- headers and cells will be generated by JS -->
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="actions">
-      <button class="add-reminder">Add Reminder</button>
-      <button class="new-event">+ New Event</button>
-    </div>
-
+    <!-- Footer -->
+    <div class="footer-quote">Less but better</div>
   </div>
 
   <script>
     (function() {
       'use strict';
 
-      // ── state ──
-      let currentDate = new Date(); // the day we focus (today initially)
-      // We'll keep the week starting on Sunday
+      // ─── state ──────────────────────────────────────────────
+      let viewYear = new Date().getFullYear();
+      let viewMonth = new Date().getMonth(); // 0‑based
+      let fontSizeScale = 1.0;   // multiplier for font sizes
+      let darkMode = false;
 
-      // ── DOM refs ──
-      const monthLabel = document.getElementById('month-label');
-      const dayLabel = document.getElementById('day-label');
-      const weekLabel = document.getElementById('week-label');
-      const weekGrid = document.getElementById('week-grid');
-      const prevBtn = document.getElementById('prev-week');
-      const nextBtn = document.getElementById('next-week');
+      // ─── DOM refs ──────────────────────────────────────────
+      const bigDateEl = document.getElementById('big-date');
+      const monthNameEl = document.getElementById('month-name');
+      const yearNumberEl = document.getElementById('year-number');
+      const dayNameEl = document.getElementById('day-name');
+      const monthLabelEl = document.getElementById('month-label');
+      const dotsGrid = document.getElementById('dots-grid');
+      const prevBtn = document.getElementById('prev-month');
+      const nextBtn = document.getElementById('next-month');
+      const themeToggle = document.getElementById('theme-toggle');
+      const sizeUp = document.getElementById('size-up');
+      const sizeDown = document.getElementById('size-down');
+      const sizeValueEl = document.getElementById('size-value');
 
-      // ── helpers ──
-      function getStartOfWeek(date) {
-        const d = new Date(date);
-        const day = d.getDay(); // 0 = Sunday
-        d.setDate(d.getDate() - day);
-        return d;
+      // ─── helpers ───────────────────────────────────────────
+      function getToday() {
+        const d = new Date();
+        return { year: d.getFullYear(), month: d.getMonth(), date: d.getDate() };
       }
 
-      function getWeekNumber(date) {
-        // ISO week number
-        const d = new Date(date);
-        d.setHours(0, 0, 0, 0);
-        // Thursday in current week decides the year
-        d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
-        const week1 = new Date(d.getFullYear(), 0, 4);
-        return 1 + Math.round(((d - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+      function daysInMonth(year, month) {
+        return new Date(year, month + 1, 0).getDate();
       }
 
-      function formatDate(date) {
-        const month = date.toLocaleString('default', { month: 'long' });
-        const day = date.getDate();
-        return { month, day };
+      function firstDayOffset(year, month) {
+        const d = new Date(year, month, 1).getDay();
+        return d === 0 ? 6 : d - 1; // Monday first
       }
 
-      function isSameDay(d1, d2) {
-        return d1.getFullYear() === d2.getFullYear() &&
-          d1.getMonth() === d2.getMonth() &&
-          d1.getDate() === d2.getDate();
+      function formatMonth(year, month) {
+        const d = new Date(year, month, 1);
+        return d.toLocaleString('default', { month: 'long' }) + ' ' + year;
       }
 
-      function isSameMonth(d1, d2) {
-        return d1.getFullYear() === d2.getFullYear() &&
-          d1.getMonth() === d2.getMonth();
-      }
+      // ─── render ────────────────────────────────────────────
+      function renderCalendar(year, month) {
+        const today = getToday();
+        const isCurrentMonth = (year === today.year && month === today.month);
+        const todayDate = today.date;
 
-      // ── render week ──
-      function renderWeek(focusDate) {
-        // focusDate is the day we want to show (e.g., today)
-        const start = getStartOfWeek(focusDate);
-        const today = new Date();
+        // Big date
+        let displayDate = isCurrentMonth ? todayDate : 1;
+        bigDateEl.textContent = displayDate;
 
-        // Update big date
-        const { month, day } = formatDate(focusDate);
-        monthLabel.textContent = month;
-        dayLabel.textContent = day;
+        const currentDate = new Date(year, month, 1);
+        monthNameEl.textContent = currentDate.toLocaleString('default', { month: 'long' });
+        yearNumberEl.textContent = year;
 
-        // Update week number
-        const weekNum = getWeekNumber(focusDate);
-        weekLabel.textContent = 'Week ' + weekNum;
+        const dayName = new Date(year, month, displayDate)
+          .toLocaleString('default', { weekday: 'short' });
+        dayNameEl.textContent = dayName;
 
-        // Build grid
-        weekGrid.innerHTML = '';
+        monthLabelEl.textContent = formatMonth(year, month);
 
-        // Day initials (Sun–Sat)
-        const dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-        for (let i = 0; i < 7; i++) {
-          const header = document.createElement('div');
-          header.className = 'day-header';
-          header.textContent = dayNames[i];
-          weekGrid.appendChild(header);
+        // Build dots
+        dotsGrid.innerHTML = '';
+        const offset = firstDayOffset(year, month);
+        const totalDays = daysInMonth(year, month);
+
+        for (let i = 0; i < offset; i++) {
+          const empty = document.createElement('div');
+          empty.className = 'dot empty';
+          empty.setAttribute('aria-hidden', 'true');
+          dotsGrid.appendChild(empty);
         }
 
-        // Dates
-        const currentMonth = start.getMonth();
-        const currentYear = start.getFullYear();
-        for (let i = 0; i < 7; i++) {
-          const date = new Date(start);
-          date.setDate(start.getDate() + i);
-
-          const cell = document.createElement('div');
-          cell.className = 'day-cell';
-          cell.textContent = date.getDate();
-
-          // Highlight today
-          if (isSameDay(date, today)) {
-            cell.classList.add('today');
+        for (let day = 1; day <= totalDays; day++) {
+          const dot = document.createElement('div');
+          dot.className = 'dot';
+          dot.textContent = day;
+          if (isCurrentMonth && day === todayDate) {
+            dot.classList.add('today');
           }
-
-          // Gray out dates not in the same month as focusDate
-          if (!isSameMonth(date, focusDate)) {
-            cell.classList.add('other-month');
-          }
-
-          // Click to focus on that day (update big date and week)
-          cell.addEventListener('click', function() {
-            currentDate = new Date(date);
-            renderWeek(currentDate);
-          });
-
-          weekGrid.appendChild(cell);
+          dotsGrid.appendChild(dot);
         }
       }
 
-      // ── navigation ──
-      function goToWeek(offset) {
-        const newDate = new Date(currentDate);
-        newDate.setDate(newDate.getDate() + offset * 7);
-        currentDate = newDate;
-        renderWeek(currentDate);
+      // ─── navigation ────────────────────────────────────────
+      function goToMonth(year, month) {
+        if (month < 0) { month = 11; year -= 1; }
+        if (month > 11) { month = 0; year += 1; }
+        viewYear = year;
+        viewMonth = month;
+        renderCalendar(viewYear, viewMonth);
       }
 
-      function prevWeek() { goToWeek(-1); }
-      function nextWeek() { goToWeek(1); }
+      function prevMonth() { goToMonth(viewYear, viewMonth - 1); }
+      function nextMonth() { goToMonth(viewYear, viewMonth + 1); }
 
-      // ── init ──
+      // ─── theme & size ──────────────────────────────────────
+      function updateTheme() {
+        darkMode = !darkMode;
+        document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+        themeToggle.textContent = darkMode ? '☀️' : '🌓';
+      }
+
+      function updateFontSize(delta) {
+        fontSizeScale = Math.min(1.6, Math.max(0.6, fontSizeScale + delta));
+        sizeValueEl.textContent = fontSizeScale.toFixed(1);
+        document.documentElement.style.setProperty('--font-scale', fontSizeScale);
+      }
+
+      // ─── init ──────────────────────────────────────────────
       function init() {
-        currentDate = new Date(); // today
-        renderWeek(currentDate);
+        const d = new Date();
+        viewYear = d.getFullYear();
+        viewMonth = d.getMonth();
+        renderCalendar(viewYear, viewMonth);
+        // set initial font scale
+        document.documentElement.style.setProperty('--font-scale', fontSizeScale);
+        sizeValueEl.textContent = fontSizeScale.toFixed(1);
       }
 
-      // ── events ──
-      prevBtn.addEventListener('click', prevWeek);
-      nextBtn.addEventListener('click', nextWeek);
+      // ─── events ────────────────────────────────────────────
+      prevBtn.addEventListener('click', prevMonth);
+      nextBtn.addEventListener('click', nextMonth);
+      themeToggle.addEventListener('click', updateTheme);
+      sizeUp.addEventListener('click', () => updateFontSize(0.1));
+      sizeDown.addEventListener('click', () => updateFontSize(-0.1));
 
-      // Keyboard support
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowLeft') { e.preventDefault();
-          prevWeek(); }
-        if (e.key === 'ArrowRight') { e.preventDefault();
-          nextWeek(); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); prevMonth(); }
+        if (e.key === 'ArrowRight') { e.preventDefault(); nextMonth(); }
       });
 
-      // Auto-refresh to update today's highlight every minute
+      // Refresh every minute to keep today highlighted
       setInterval(() => {
-        // Re-render with same focusDate to update today highlight
-        renderWeek(currentDate);
+        renderCalendar(viewYear, viewMonth);
       }, 60000);
 
       init();
