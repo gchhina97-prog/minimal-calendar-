@@ -43,43 +43,24 @@
       margin-bottom: clamp(-4px, -0.5vh, 0px);
     }
 
-    /* ── big date ── */
+    /* ── big date (now orange) ── */
     .big-date {
       font-size: clamp(10rem, 35vh, 28rem);
       font-weight: 800;
       line-height: 1;
-      color: #444444;
+      color: #FF5500; /* changed to orange */
       letter-spacing: -6px;
       margin: clamp(-8px, -1vh, 0px) 0;
-    }
-
-    /* ── "Calendar" label ── */
-    .bottom-label {
-      font-size: clamp(0.9rem, 2.2vh, 1.8rem);
-      font-weight: 500;
-      color: #8C8C8C;
-      letter-spacing: 6px;
-      text-transform: uppercase;
-      margin-top: clamp(4px, 1vh, 16px);
-    }
-
-    /* ── subtle today dot indicator ── */
-    .today-dot {
-      width: clamp(6px, 1.2vh, 12px);
-      height: clamp(6px, 1.2vh, 12px);
-      border-radius: 50%;
-      background: #FF5500;
-      margin-top: clamp(6px, 1.2vh, 14px);
-      box-shadow: 0 2px 8px rgba(255, 85, 0, 0.3);
     }
 
     /* ── landscape tweaks ── */
     @media (orientation: landscape) {
       .calendar-card {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
         align-items: center;
+        justify-items: center;
         gap: clamp(4px, 1vw, 20px);
         padding: clamp(6px, 1.5vh, 20px);
       }
@@ -87,54 +68,16 @@
       .top-row {
         font-size: clamp(1.2rem, 4vh, 2.8rem);
         margin-bottom: 0;
-        width: 100%;
-        text-align: center;
+        grid-row: 1;
       }
 
       .big-date {
         font-size: clamp(6rem, 22vh, 16rem);
         letter-spacing: -4px;
         margin: 0;
-        line-height: 1;
-        width: 100%;
-        text-align: center;
-      }
-
-      .bottom-label {
-        font-size: clamp(0.6rem, 1.8vh, 1.2rem);
-        letter-spacing: 4px;
-        margin-top: 0;
-        width: 100%;
-        text-align: center;
-      }
-
-      .today-dot {
-        width: clamp(4px, 0.8vh, 8px);
-        height: clamp(4px, 0.8vh, 8px);
-        margin-top: 0;
-      }
-
-      /* make it a nice horizontal layout */
-      .calendar-card {
-        display: grid;
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr auto auto;
-        align-items: center;
-        justify-items: center;
-      }
-
-      .top-row {
-        grid-row: 1;
-      }
-      .big-date {
         grid-row: 2;
         align-self: center;
-      }
-      .bottom-label {
-        grid-row: 3;
-      }
-      .today-dot {
-        grid-row: 4;
+        color: #FF5500; /* ensure orange in landscape too */
       }
     }
 
@@ -146,14 +89,7 @@
       .big-date {
         font-size: clamp(3.6rem, 14vh, 8rem);
         letter-spacing: -2px;
-      }
-      .bottom-label {
-        font-size: clamp(0.4rem, 1.2vh, 0.7rem);
-        letter-spacing: 2px;
-      }
-      .today-dot {
-        width: clamp(3px, 0.6vh, 5px);
-        height: clamp(3px, 0.6vh, 5px);
+        color: #FF5500;
       }
     }
 
@@ -170,8 +106,6 @@
   <div class="calendar-card" id="app">
     <div class="top-row" id="top-row">Wed Sep</div>
     <div class="big-date" id="big-date">9</div>
-    <div class="bottom-label">Calendar</div>
-    <div class="today-dot"></div>
   </div>
 
   <script>
@@ -190,7 +124,7 @@
       }
 
       update();
-      // update every minute (in case day changes)
+      // update every minute
       setInterval(update, 60000);
     })();
   </script>
